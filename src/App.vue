@@ -6,7 +6,7 @@
       </h1>
       <div class="columns">
         <div class="column is-half">
-          <DateField />
+          <DateField debug="true" />
         </div>
         <div class="column"><p></p></div>
       </div>
