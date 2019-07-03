@@ -1,24 +1,32 @@
 <!-- ###################   HTML   ################### -->
 <template>
-  <div class="overlay_holder">
-    <span class="overlay" v-html="message_highlight"></span>
-    <b-field label="Date Phrase" :type="hasError" :message="error_message">
-      <b-input v-model="message" placeholder="enter a date or date phrase">
-      </b-input>
-    </b-field>
-
-    <div class="box" v-if="debug">
-      <pre>{{ json_data }}</pre>
+  <div>
+    <div class="overlay_holder">
+      <span class="overlay" v-html="message_highlight"></span>
+      <b-field label="Date Phrase" :type="has_error" :message="error_message">
+        <b-input v-model="message" placeholder="enter a date or date phrase">
+        </b-input>
+      </b-field>
     </div>
+    <DateVisualization :data="linked_art" />
+
+    <JsonViewer v-if="debug" :data="json_data" />
   </div>
 </template>
 
 <!-- ################### JAVACRIPT ################### -->
 
 <script>
+import JsonViewer from "./JsonViewer.vue";
+import DateVisualization from "./DateVisualization.vue";
+
 import { parse_date } from "art-tracks";
 
 export default {
+  components: {
+    JsonViewer,
+    DateVisualization
+  },
   props: {
     url: {
       type: String,
@@ -35,15 +43,18 @@ export default {
   computed: {
     // a computed getter
     message_highlight: function() {
-      if (!this.hasError) return null;
+      if (!this.has_error) return null;
       let offset = this.response.error.offset;
       let msg = this.message;
       let valid_text = msg.substr(0, offset);
       let invalid_text = msg.substr(offset, msg.length);
       return `${valid_text}<span class='is-error'>${invalid_text}</span>`;
     },
-    hasError: function() {
+    has_error: function() {
       return this.error_message ? "is-danger" : "";
+    },
+    linked_art: function() {
+      return this.response ? this.response.linked_art : {};
     },
     error_message: function() {
       if (this.response && this.response.error) {
@@ -60,17 +71,19 @@ export default {
   },
   methods: {
     computeErrorMessage: function(m) {
-      let lines = m.message
-        .trim()
-        .split("\n")
-        .filter(line => line);
+      return `Unexpected character: <b>${m.token.value}</b>`;
 
-      let syntax = lines.shift();
-      let test = lines.shift();
-      let caret = lines.shift();
-      let msg = lines.join(" ");
+      // let lines = m.message
+      //   .trim()
+      //   .split("\n")
+      //   .filter(line => line);
 
-      return msg;
+      // let syntax = lines.shift();
+      // let test = lines.shift();
+      // let caret = lines.shift();
+      // let msg = lines.join(" ");
+
+      // return msg;
 
       //let example = `${test}<br>${caret}`.replace(/ /g, "&nbsp;");
       //`<span class='is-block is-family-monospace error-text'>${example}</span>`;
@@ -81,23 +94,19 @@ export default {
 
 <!-- ###################    CSS    ################### -->
 <style lang="scss">
-.error-text {
-  font-weight: bold;
-}
-.overlay {
-  padding-left: 0.625em;
-  top: calc(22px + 1em);
-  position: absolute;
-  z-index: 1;
-  color: rgba(0, 0, 0, 0);
-}
 .overlay_holder {
   position: relative;
 }
+
+.overlay {
+  color: rgba(0, 0, 0, 0);
+  padding-left: 0.625em;
+  position: absolute;
+  top: calc(22px + 1em);
+  z-index: 1;
+}
+
 .is-error {
   background: rgba(255, 120, 120, 0.5);
-  color: rgba(0, 0, 0, 0);
-  padding: 1px;
-  margin-left: -1px;
 }
 </style>
